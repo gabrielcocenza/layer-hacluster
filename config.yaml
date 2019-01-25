@@ -3,7 +3,8 @@ options:
     type: string
     description: |
       Virtual IP for the charm to use with the HA Cluster subordinate charm
-      Mutually exclusive with ha-cluster-dns.
+      Mutually exclusive with ha-cluster-dns. Multiple virtual IPs are
+      separated by spaces.
     default: ""
   ha-cluster-dns:
     type: string
