@@ -2,7 +2,9 @@ from charms.reactive import when, when_not, clear_flag, set_flag
 from charms.reactive import endpoint_from_flag
 from charmhelpers.core import hookenv
 from charms.layer.kubernetes_common import get_ingress_address
-from charms.layer.hacluster import services
+from charmhelper.core import unitdata
+
+db = unitdata.kv()
 
 
 @when('ha.connected', 'layer.hacluster.services_configured')
@@ -28,6 +30,7 @@ def configure_hacluster():
         hacluster.add_dnsha(hookenv.application_name(), ip, dns_record,
                             'public')
 
+    services = db.get('services', {})
     for name, service in services.items():
         hacluster.add_init_service(name, service)
 

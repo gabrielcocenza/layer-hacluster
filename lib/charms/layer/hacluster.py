@@ -1,6 +1,7 @@
 from charms.reactive import clear_flag, set_flag
+from charmhelper.core import unitdata
 
-services = {}
+db = unitdata.kv()
 
 
 def add_service_to_hacluster(name, service_name):
@@ -9,9 +10,9 @@ def add_service_to_hacluster(name, service_name):
        which is the name used by systemd/initd to identify
        the service.
     """
-    global services
-
+    services = db.get('services', {})
     services[name] = service_name
+    db.set('services', services)
     clear_flag('layer-hacluster.configured')
     set_flag('layer.hacluster.services_configured')
 
@@ -22,7 +23,6 @@ def remove_service_from_hacluster(name, service_name):
        which is the name used by systemd/initd to identify
        the service.
     """
-    global services
-
-    if name in services:
-        del services[name]
+    services = db.get('services', {})
+    del services[name]
+    db.set('services', services)
