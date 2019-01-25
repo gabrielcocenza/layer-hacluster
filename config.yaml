@@ -1,0 +1,13 @@
+options:
+  ha-cluster-vip:
+    type: string
+    description: |
+      Virtual IP for the charm to use with the HA Cluster subordinate charm
+      Mutually exclusive with ha-cluster-dns.
+    default: ""
+  ha-cluster-dns:
+    type: string
+    description: |
+      DNS entry to use with the HA Cluster subordinate charm.
+      Mutually exclusive with ha-cluster-vip.
+    default: ""
