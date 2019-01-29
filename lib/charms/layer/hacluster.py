@@ -1,5 +1,5 @@
 from charms.reactive import clear_flag, set_flag
-from charmhelper.core import unitdata
+from charmhelpers.core import unitdata
 
 db = unitdata.kv()
 

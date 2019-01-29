@@ -2,7 +2,7 @@ from charms.reactive import when, when_not, clear_flag, set_flag
 from charms.reactive import endpoint_from_flag
 from charmhelpers.core import hookenv
 from charms.layer.kubernetes_common import get_ingress_address
-from charmhelper.core import unitdata
+from charmhelpers.core import unitdata
 
 db = unitdata.kv()
 
