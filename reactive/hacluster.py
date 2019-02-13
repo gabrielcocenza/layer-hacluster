@@ -30,15 +30,50 @@ def configure_hacluster():
         hacluster.add_dnsha(hookenv.application_name(), ip, dns_record,
                             'public')
 
-    services = db.get('services', {})
-    for name, service in services.items():
+    # current services are services that have been bound and corosync knows about them
+    # desired services are services that have been added, but not bound yet
+    # deleted services are services that have been bound, but are desired to be gone
+    services = db.get('services', {'current_services': {},
+                                   'desired_services': {},
+                                   'deleted_services': {}})
+    for name, service in services['deleted_services'].items():
+        hacluster.remove_init_service(name, service)
+    for name, service in services['desired_services'].items():
         hacluster.add_init_service(name, service)
+        services['current_services'][name] = service
+
+    services['deleted_services'] = {}
+    services['desired_services'] = {}
 
     hacluster.bind_resources()
     set_flag('layer-hacluster.configured')
 
 
-@when('config.ha-cluster-vip.changed',
-      'config.ha-cluster-dns.changed')
-def update_config():
+@when('config.changed.ha-cluster-vip',
+      'ha.connected')
+def update_vips():
+    hacluster = endpoint_from_flag('ha.connected')
+    config = hookenv.config()
+    original_vips = set(config.previous('ha-cluster-vip').split())
+    new_vips = set(config['ha-cluster-vip'].split())
+    old_vips = original_vips - new_vips
+
+    for vip in old_vips:
+        hacluster.remove_vip(hookenv.application_name(), vip)
+
+    clear_flag('layer-hacluster.configured')
+
+
+@when('config.changed.ha-cluster-dns',
+      'ha.connected')
+def update_dns():
+    hacluster = endpoint_from_flag('ha.connected')
+    config = hookenv.config()
+    original_dns = set(config.previous('ha-cluster-dns').split())
+    new_dns = set(config['ha-cluster-dns'].split())
+    old_dns = original_dns - new_dns
+
+    for dns in old_dns:
+        hacluster.remove_dnsha(hookenv.application_name, 'public')
+
     clear_flag('layer-hacluster.configured')
