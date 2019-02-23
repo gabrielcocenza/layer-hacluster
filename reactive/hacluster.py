@@ -1,14 +1,18 @@
+from charms import layer
+
 from charms.reactive import when, when_not, clear_flag, set_flag
 from charms.reactive import endpoint_from_flag
-from charmhelpers.core import hookenv
+
 from charms.layer.kubernetes_common import get_ingress_address
+
+from charmhelpers.core import hookenv
 from charmhelpers.core import unitdata
 
 db = unitdata.kv()
 
 
 @when('ha.connected', 'layer.hacluster.services_configured')
-@when_not('layer.hacluster.configured')
+@when_not('layer-hacluster.configured')
 def configure_hacluster():
     """Configure HA resources in corosync"""
     hacluster = endpoint_from_flag('ha.connected')
@@ -26,16 +30,15 @@ def configure_hacluster():
         for vip in vips:
             hacluster.add_vip(hookenv.application_name(), vip)
     elif dns_record:
-        ip = get_ingress_address()
+        layer_options = layer.options('hacluster')
+        binding_address = layer_options.get('binding_address')
+        ip = get_ingress_address(binding_address)
         hacluster.add_dnsha(hookenv.application_name(), ip, dns_record,
                             'public')
 
-    # current services are services that have been bound and corosync knows about them
-    # desired services are services that have been added, but not bound yet
-    # deleted services are services that have been bound, but are desired to be gone
-    services = db.get('services', {'current_services': {},
-                                   'desired_services': {},
-                                   'deleted_services': {}})
+    services = db.get('layer-hacluster.services', {'current_services': {},
+                                                   'desired_services': {},
+                                                   'deleted_services': {}})
     for name, service in services['deleted_services'].items():
         hacluster.remove_init_service(name, service)
     for name, service in services['desired_services'].items():

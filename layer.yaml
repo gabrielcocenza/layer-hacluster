@@ -2,3 +2,4 @@ repo: https://github.com/juju-solutions/layer-hacluster.git
 includes:
   - 'layer:basic'
   - 'interface:hacluster'
+  - 'layer:kubernetes-common'

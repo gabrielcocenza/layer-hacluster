@@ -10,15 +10,12 @@ def add_service_to_hacluster(name, service_name):
        which is the name used by systemd/initd to identify
        the service.
     """
-    services = db.get('services', {'current_services': {},
-                                   'desired_services': {},
-                                   'deleted_services': {}})
-    if name in services['deleted_services']:
-        # desired again
-        del services['deleted_services'][name]
+    services = db.get('layer-hacluster.services', {'current_services': {},
+                                                   'desired_services': {},
+                                                   'deleted_services': {}})
     if name not in services['current_services']:
         services['desired_services'][name] = service_name
-    db.set('services', services)
+    db.set('layer-hacluster.services', services)
     clear_flag('layer-hacluster.configured')
     set_flag('layer.hacluster.services_configured')
 
@@ -29,13 +26,14 @@ def remove_service_from_hacluster(name, service_name):
        which is the name used by systemd/initd to identify
        the service.
     """
-    services = db.get('services', {'current_services': {},
-                                   'desired_services': {},
-                                   'deleted_services': {}})
+    services = db.get('layer-hacluster.services', {'current_services': {},
+                                                   'desired_services': {},
+                                                   'deleted_services': {}})
     if name in services['current_services']:
         services['deleted_services'][name] = service_name
 
     if name in services['desired_services']:
         del services['desired_services'][name]
 
-    db.set('services', services)
+    db.set('layer-hacluster.services', services)
+    clear_flag('layer-hacluster.configured')
