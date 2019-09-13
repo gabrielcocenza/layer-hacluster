@@ -40,9 +40,9 @@ def configure_hacluster():
                                                    'desired_services': {},
                                                    'deleted_services': {}})
     for name, service in services['deleted_services'].items():
-        hacluster.remove_init_service(name, service)
+        hacluster.remove_systemd_service(name, service)
     for name, service in services['desired_services'].items():
-        hacluster.add_init_service(name, service)
+        hacluster.add_systemd_service(name, service)
         services['current_services'][name] = service
 
     services['deleted_services'] = {}
