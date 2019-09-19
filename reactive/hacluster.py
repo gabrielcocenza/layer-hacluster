@@ -1,7 +1,7 @@
 from charms import layer
 
 from charms.reactive import hook
-from charms.reactive import when, when_not, clear_flag, set_flag
+from charms.reactive import when, when_not, clear_flag, set_flag, is_flag_set
 from charms.reactive import endpoint_from_flag
 
 from charms.layer.kubernetes_common import get_ingress_address
@@ -19,22 +19,24 @@ def do_upgrade():
     if not hacluster:
         return
 
-    services = db.get('layer-hacluster.services', {'current_services': {},
-                                                   'desired_services': {},
-                                                   'deleted_services': {}})
-    for name, service in services['current_services'].items():
-        hookenv.log("changing service {} to systemd service".format(name))
-        hacluster.remove_init_service(name, service)
-        hacluster.add_systemd_service(name, service)
+    if not is_flag_set('layer-hacluster.upgraded-systemd'):
+        services = db.get('layer-hacluster.services', {'current_services': {},
+                                                       'desired_services': {},
+                                                       'deleted_services': {}})
+        for name, service in services['current_services'].items():
+            hookenv.log("changing service {} to systemd service".format(name))
+            hacluster.remove_init_service(name, service)
+            hacluster.add_systemd_service(name, service)
 
-    # change any pending lsb entries to systemd
-    for name, service in services['desired_services'].items():
-        msg = "changing pending service {} to systemd service"
-        hookenv.log(msg.format(name))
-        hacluster.remove_init_service(name, service)
-        hacluster.add_systemd_service(name, service)
+        # change any pending lsb entries to systemd
+        for name, service in services['desired_services'].items():
+            msg = "changing pending service {} to systemd service"
+            hookenv.log(msg.format(name))
+            hacluster.remove_init_service(name, service)
+            hacluster.add_systemd_service(name, service)
 
-    clear_flag('layer-hacluster.configured')
+        clear_flag('layer-hacluster.configured')
+        set_flag('layer-hacluster.upgraded-systemd')
 
 
 @when('ha.connected', 'layer.hacluster.services_configured')
