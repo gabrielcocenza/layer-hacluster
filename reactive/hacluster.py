@@ -39,7 +39,7 @@ def do_upgrade():
         set_flag('layer-hacluster.upgraded-systemd')
 
 
-@when('ha.connected', 'layer.hacluster.services_configured')
+@when('ha.connected')
 @when_not('layer-hacluster.configured')
 def configure_hacluster():
     """Configure HA resources in corosync"""
